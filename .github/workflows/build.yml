@@ -65,14 +65,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate Docker tags
+        id: meta
+        run: |
+          TAGS="ghcr.io/rxtx-hosting/flowlens:${{ github.event.release.tag_name }}"
+          if [ "${{ github.event.release.prerelease }}" != "true" ]; then
+            TAGS="$TAGS,ghcr.io/rxtx-hosting/flowlens:latest"
+          fi
+          echo "tags=$TAGS" >> $GITHUB_OUTPUT
+
       - uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64
           push: true
-          tags: |
-            ghcr.io/rxtx-hosting/flowlens:${{ github.event.release.tag_name }}
-            ghcr.io/rxtx-hosting/flowlens:latest
+          tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max

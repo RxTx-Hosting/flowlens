@@ -1,6 +1,6 @@
-FROM golang:1.24-alpine AS builder
+FROM golang:1.24-bookworm AS builder
 
-RUN apk add --no-cache clang llvm make git libbpf-dev linux-headers
+RUN apt-get update && apt-get install -y clang llvm make git libbpf-dev && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /build
 
@@ -11,9 +11,9 @@ COPY . .
 
 RUN make generate && make build
 
-FROM alpine:latest
+FROM debian:bookworm-slim
 
-RUN apk add --no-cache libbpf
+RUN apt-get update && apt-get install -y libbpf1 && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /build/flowlens /usr/local/bin/flowlens
 
