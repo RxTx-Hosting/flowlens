@@ -48,6 +48,41 @@ sudo mv config.example.yaml /etc/flowlens/config.yaml
 docker compose up -d
 ```
 
+## Pterodactyl/Pelican Integration
+
+FlowLens works with Pterodactyl and Pelican game panels by filtering containers and extracting server information from Docker labels and environment variables.
+
+**Configuration:**
+
+```yaml
+# Filter only Pterodactyl game server containers
+docker_labels:
+  Service: Pterodactyl
+
+# Extract server UUID from environment variable
+server_id_source: env:P_SERVER_UUID
+
+# Get game port from environment variable
+port_env_var: SERVER_PORT
+```
+
+**Label options:**
+- `docker_labels`: Filters which containers to monitor. Common labels:
+  - `Service: Pterodactyl` - Pterodactyl containers
+  - `Service: Pelican` - Pelican containers (fork of Pterodactyl)
+  - Empty `{}` - Monitor all containers
+
+**Server ID options:**
+- `server_id_source: env:P_SERVER_UUID` - Use Pterodactyl's server UUID (recommended)
+- `server_id_source: hostname` - Use container hostname
+- `server_id_source: name` - Use container name
+- `server_id_source: label:your.label` - Use custom label
+
+**Port detection:**
+- `port_env_var: SERVER_PORT` - Standard game server port variable
+- `port_env_var: GAME_PORT` - Alternative port variable
+- Empty - Uses first published port
+
 ## Requirements
 
 - Linux kernel 5.8+ with eBPF CO-RE support
