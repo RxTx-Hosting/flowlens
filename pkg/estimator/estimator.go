@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rxtx-hosting/flowlens/pkg/docker"
 	"github.com/rxtx-hosting/flowlens/pkg/ebpf"
 )
 
@@ -17,7 +16,6 @@ type Estimator struct {
 	activityThreshold   time.Duration
 	minPacketsThreshold uint64
 	minBytesThreshold   uint64
-	serverMap           map[int]string
 }
 
 func NewEstimator(activityThreshold time.Duration, minPackets, minBytes uint64) *Estimator {
@@ -25,19 +23,10 @@ func NewEstimator(activityThreshold time.Duration, minPackets, minBytes uint64) 
 		activityThreshold:   activityThreshold,
 		minPacketsThreshold: minPackets,
 		minBytesThreshold:   minBytes,
-		serverMap:           make(map[int]string),
 	}
 }
 
-func (e *Estimator) UpdateServerMap(servers []docker.ServerMetadata) {
-	newMap := make(map[int]string)
-	for _, srv := range servers {
-		newMap[srv.GamePort] = srv.ServerID
-	}
-	e.serverMap = newMap
-}
-
-func (e *Estimator) EstimatePlayers(flows map[ebpf.FlowKey]ebpf.FlowInfo) []ServerPlayerStats {
+func (e *Estimator) EstimatePlayers(flows map[ebpf.FlowKey]ebpf.FlowInfo, serverMap map[int]string) []ServerPlayerStats {
 	bootTime, err := getBootTime()
 	if err != nil {
 		return []ServerPlayerStats{}
@@ -72,7 +61,7 @@ func (e *Estimator) EstimatePlayers(flows map[ebpf.FlowKey]ebpf.FlowInfo) []Serv
 			continue
 		}
 
-		if _, exists := e.serverMap[port]; !exists {
+		if _, exists := serverMap[port]; !exists {
 			portFiltered++
 			continue
 		}
@@ -93,7 +82,7 @@ func (e *Estimator) EstimatePlayers(flows map[ebpf.FlowKey]ebpf.FlowInfo) []Serv
 	stats := make([]ServerPlayerStats, 0, len(portFlows))
 
 	for port, ipMap := range portFlows {
-		serverID := e.serverMap[port]
+		serverID := serverMap[port]
 		uniqueIPs := make([]string, 0, len(ipMap))
 		var totalBytes uint64
 

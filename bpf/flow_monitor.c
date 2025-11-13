@@ -30,6 +30,13 @@ struct {
 	__type(value, struct flow_info);
 } flow_stats SEC(".maps");
 
+struct {
+	__uint(type, BPF_MAP_TYPE_HASH);
+	__uint(max_entries, 1000);
+	__type(key, __u16);
+	__type(value, __u8);
+} monitored_ports SEC(".maps");
+
 SEC("tc")
 int flow_monitor(struct __sk_buff *skb)
 {
@@ -73,6 +80,9 @@ int flow_monitor(struct __sk_buff *skb)
 	}
 
 	key.dst_port = dst_port;
+
+	if (!bpf_map_lookup_elem(&monitored_ports, &dst_port))
+		return TC_ACT_OK;
 
 	struct flow_info *info = bpf_map_lookup_elem(&flow_stats, &key);
 	if (info) {

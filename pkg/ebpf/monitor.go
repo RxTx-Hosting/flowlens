@@ -3,14 +3,16 @@ package ebpf
 import (
 	"fmt"
 
+	"github.com/rxtx-hosting/flowlens/pkg/docker"
 	"github.com/vishvananda/netlink"
 )
 
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -type flow_key -type flow_info flowMonitor ../../bpf/flow_monitor.c -- -I/usr/include -I/usr/include/x86_64-linux-gnu -O2 -g
 
 type Monitor struct {
-	objs  *flowMonitorObjects
-	iface string
+	objs      *flowMonitorObjects
+	iface     string
+	serverMap map[int]string
 }
 
 func NewMonitor(iface string) (*Monitor, error) {
@@ -60,8 +62,9 @@ func NewMonitor(iface string) (*Monitor, error) {
 	}
 
 	return &Monitor{
-		objs:  objs,
-		iface: iface,
+		objs:      objs,
+		iface:     iface,
+		serverMap: make(map[int]string),
 	}, nil
 }
 
@@ -104,4 +107,44 @@ func (m *Monitor) ReadFlows() (map[FlowKey]FlowInfo, error) {
 	}
 
 	return flows, nil
+}
+
+func (m *Monitor) UpdateServers(servers []docker.ServerMetadata) error {
+	newMap := make(map[int]string)
+	newPorts := make(map[uint16]bool)
+
+	for _, srv := range servers {
+		newMap[srv.GamePort] = srv.ServerID
+		newPorts[uint16(srv.GamePort)] = true
+	}
+
+	for port := range newPorts {
+		var val uint8 = 1
+		if err := m.objs.MonitoredPorts.Put(&port, &val); err != nil {
+			return fmt.Errorf("failed to add port %d: %w", port, err)
+		}
+	}
+
+	var oldPort uint16
+	var oldVal uint8
+	iter := m.objs.MonitoredPorts.Iterate()
+	for iter.Next(&oldPort, &oldVal) {
+		if !newPorts[oldPort] {
+			if err := m.objs.MonitoredPorts.Delete(&oldPort); err != nil {
+				return fmt.Errorf("failed to remove port %d: %w", oldPort, err)
+			}
+		}
+	}
+
+	m.serverMap = newMap
+	return nil
+}
+
+func (m *Monitor) GetServerID(port int) (string, bool) {
+	id, ok := m.serverMap[port]
+	return id, ok
+}
+
+func (m *Monitor) GetServerMap() map[int]string {
+	return m.serverMap
 }

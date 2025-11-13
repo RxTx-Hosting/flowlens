@@ -117,7 +117,10 @@ func main() {
 				continue
 			}
 			slog.Info("Discovered game servers", "count", len(servers))
-			playerEstimator.UpdateServerMap(servers)
+			if err := ebpfMonitor.UpdateServers(servers); err != nil {
+				slog.Error("Error updating monitored servers", "error", err)
+				continue
+			}
 
 		case <-metricsTicker.C:
 			flows, err := ebpfMonitor.ReadFlows()
@@ -126,7 +129,7 @@ func main() {
 				continue
 			}
 
-			stats := playerEstimator.EstimatePlayers(flows)
+			stats := playerEstimator.EstimatePlayers(flows, ebpfMonitor.GetServerMap())
 			slog.Info("Estimated players", "servers", len(stats))
 
 			apiServer.UpdateStats(stats)
