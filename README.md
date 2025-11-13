@@ -23,9 +23,33 @@ eBPF-based network traffic monitor that estimates active players on game servers
   <img src="img/low_level.png" alt="Low Level Architecture">
 </p>
 
+## Quick Start
+
+```yaml
+# docker-compose.yml
+services:
+  flowlens:
+    image: ghcr.io/rxtx-hosting/flowlens:latest
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - BPF
+      - PERFMON
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/flowlens/config.yaml:/etc/flowlens/config.yaml:ro
+    restart: unless-stopped
+```
+
+```bash
+sudo mkdir -p /etc/flowlens
+wget https://raw.githubusercontent.com/rxtx-hosting/flowlens/main/config.example.yaml
+sudo mv config.example.yaml /etc/flowlens/config.yaml
+docker compose up -d
+```
+
 ## Requirements
 
-**Host:**
 - Linux kernel 5.8+ with eBPF CO-RE support
 - Docker with containerized game servers
 
@@ -33,24 +57,6 @@ eBPF-based network traffic monitor that estimates active players on game servers
 ```bash
 uname -r  # Must be >= 5.8
 zgrep CONFIG_DEBUG_INFO_BTF /proc/config.gz  # Must show =y
-```
-
-**Build machine:**
-- Go 1.24+
-- clang, llvm
-- libbpf-dev
-
-Install build dependencies (Ubuntu/Debian):
-```bash
-sudo apt install -y clang llvm libbpf-dev
-```
-
-## Build
-
-```bash
-make deps      # Install Go dependencies and bpf2go
-make generate  # Generate eBPF bindings from C code
-make build     # Compile binary
 ```
 
 ## Configuration
@@ -247,3 +253,22 @@ sudo systemctl enable --now flowlens
 - Multiple players behind NAT share one IP (counted as one player) - This is also the same problem with relays, multiple players may come from the same relay IP so we can't detect if its more than 1 player
 - Port scans may inflate counts (filter low packet/byte thresholds if needed) and even be detected as a fake player
 - Most games run over UDP, there is no state nor any game specific logic, so it may never produce 100% accurate results
+
+## Build from Source
+
+**Requirements:**
+- Go 1.24+
+- clang, llvm
+- libbpf-dev
+
+Install build dependencies (Ubuntu/Debian):
+```bash
+sudo apt install -y clang llvm libbpf-dev
+```
+
+**Build:**
+```bash
+make deps      # Install Go dependencies and bpf2go
+make generate  # Generate eBPF bindings from C code
+make build     # Compile binary
+```
