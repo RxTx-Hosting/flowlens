@@ -91,7 +91,11 @@ port_env_var: SERVER_PORT
 **This application will NOT work on hosts without eBPF support.** Check with:
 ```bash
 uname -r  # Must be >= 5.8
-zgrep CONFIG_DEBUG_INFO_BTF /proc/config.gz  # Must show =y
+
+# Check BTF support (try one of these):
+zgrep CONFIG_DEBUG_INFO_BTF /proc/config.gz 2>/dev/null || \
+grep CONFIG_DEBUG_INFO_BTF /boot/config-$(uname -r) 2>/dev/null || \
+ls /sys/kernel/btf/vmlinux
 ```
 
 ## Configuration
