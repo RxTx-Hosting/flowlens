@@ -35,6 +35,7 @@ func (a *APIServer) UpdateStats(stats []estimator.ServerPlayerStats) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
+	a.cache = make(map[string]estimator.ServerPlayerStats)
 	for _, stat := range stats {
 		a.cache[stat.ServerID] = stat
 	}

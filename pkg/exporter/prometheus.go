@@ -47,11 +47,22 @@ func (p *PrometheusExporter) UpdateStats(stats []estimator.ServerPlayerStats) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
+	newCache := make(map[string]estimator.ServerPlayerStats)
+
 	for _, stat := range stats {
-		p.cache[stat.ServerID] = stat
+		newCache[stat.ServerID] = stat
 		p.activePlayers.WithLabelValues(stat.ServerID).Set(float64(stat.ActivePlayers))
 		p.totalBytes.WithLabelValues(stat.ServerID).Set(float64(stat.TotalBytes))
 	}
+
+	for serverID := range p.cache {
+		if _, exists := newCache[serverID]; !exists {
+			p.activePlayers.DeleteLabelValues(serverID)
+			p.totalBytes.DeleteLabelValues(serverID)
+		}
+	}
+
+	p.cache = newCache
 }
 
 func (p *PrometheusExporter) StartServer(addr string) error {
