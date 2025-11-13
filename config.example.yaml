@@ -1,0 +1,17 @@
+interface: eth0
+ebpf_map_size: 100000
+discovery_interval: 30s
+metrics_interval: 30s
+player_activity_threshold: 5m
+min_packets_threshold: 50
+min_bytes_threshold: 1000
+server_addr: :8080
+api_key: your-secret-api-key-here
+prometheus_addr: :9090
+log_level: info
+
+docker_labels:
+  app: gameserver
+
+server_id_source: hostname
+port_env_var: GAME_PORT

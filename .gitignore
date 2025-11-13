@@ -1,3 +1,11 @@
+local/
+
+# FlowLens
+flowlens
+config.yaml
+pkg/ebpf/flowmonitor_*.go
+pkg/ebpf/flowmonitor_*.o
+
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
 #
