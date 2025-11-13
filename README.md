@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="img/logo.png" alt="FlowLens">
+  <img src="img/logo.png" width="50%" alt="FlowLens">
 </p>
 
 ---
