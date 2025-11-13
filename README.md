@@ -199,21 +199,20 @@ sum(rate(flowlens_total_bytes[5m]))
 
 ### Manual Binary
 
-Build on a machine with build tools, then copy to target host:
+Download the latest release from [GitHub Releases](https://github.com/rxtx-hosting/flowlens/releases):
 
 ```bash
-# Build
-make generate && make build
+# Download latest release (amd64)
+wget https://github.com/rxtx-hosting/flowlens/releases/latest/download/flowlens-linux-amd64
 
-# Copy to target
-scp flowlens user@gamehost:/tmp/
-scp config.example.yaml user@gamehost:/tmp/
-
-# On target host
-sudo mv /tmp/flowlens /usr/local/bin/
+# Install
+sudo mv flowlens-linux-amd64 /usr/local/bin/flowlens
 sudo chmod +x /usr/local/bin/flowlens
+
+# Create config
 sudo mkdir -p /etc/flowlens
-sudo mv /tmp/config.example.yaml /etc/flowlens/config.yaml
+wget https://raw.githubusercontent.com/rxtx-hosting/flowlens/main/config.example.yaml
+sudo mv config.example.yaml /etc/flowlens/config.yaml
 # Edit /etc/flowlens/config.yaml with your settings
 
 # Run

@@ -24,5 +24,5 @@ install: build
 	sudo cp config.example.yaml /etc/flowlens/config.yaml.example
 
 deps:
-	go get github.com/cilium/ebpf/cmd/bpf2go
-	go mod tidy
+	go install github.com/cilium/ebpf/cmd/bpf2go@latest
+	go mod download
