@@ -1,4 +1,6 @@
-# FlowLens
+<p align="center">
+  <img src="img/logo.png" width="25%" alt="FlowLens">
+</p>
 
 eBPF-based network traffic monitor that estimates active players on game servers by tracking unique source IPs per destination port. Works with any game without game-specific integrations. Currently only Docker daemon is supported (tightly integrated) and only works for games that don't proxy users via a platform relay eg. Steam (SDR - Steam Datagram Relay), games that use these features should preferably have a specific implementation to gather player stats/connected over RCON or other protocols supported directly by the game developers.
 
