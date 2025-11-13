@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="img/logo.png" width="25%" alt="FlowLens">
+  <img src="img/logo.png" alt="FlowLens">
 </p>
 
 ---
@@ -15,9 +15,13 @@ eBPF-based network traffic monitor that estimates active players on game servers
 5. Counts unique IPs per port within activity window
 6. Exposes metrics via JSON API and/or Prometheus
 
-<img src="img/high_level.png" width="50%" alt="High Level Architecture">
+<p align="center">
+  <img src="img/high_level.png" alt="High Level Architecture">
+</p>
 
-<img src="img/low_level.png" width="50%" alt="Low Level Architecture">
+<p align="center">
+  <img src="img/low_level.png" alt="Low Level Architecture">
+</p>
 
 ## Requirements
 
