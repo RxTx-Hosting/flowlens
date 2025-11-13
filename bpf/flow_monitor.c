@@ -47,21 +47,26 @@ int flow_monitor(struct __sk_buff *skb)
 	if ((void *)(ip + 1) > data_end)
 		return TC_ACT_OK;
 
+	__u8 ihl = ip->ihl;
+	if (ihl < 5)
+		return TC_ACT_OK;
+
 	struct flow_key key = {0};
 	key.src_ip = ip->saddr;
 	key.proto = ip->protocol;
 
 	__u16 dst_port = 0;
+	void *l4 = (void *)ip + (ihl * 4);
 
 	if (ip->protocol == IPPROTO_TCP) {
-		struct tcphdr *tcp = (void *)ip + (ip->ihl * 4);
-		if ((void *)(tcp + 1) > data_end)
+		if (l4 + sizeof(struct tcphdr) > data_end)
 			return TC_ACT_OK;
+		struct tcphdr *tcp = l4;
 		dst_port = bpf_ntohs(tcp->dest);
 	} else if (ip->protocol == IPPROTO_UDP) {
-		struct udphdr *udp = (void *)ip + (ip->ihl * 4);
-		if ((void *)(udp + 1) > data_end)
+		if (l4 + sizeof(struct udphdr) > data_end)
 			return TC_ACT_OK;
+		struct udphdr *udp = l4;
 		dst_port = bpf_ntohs(udp->dest);
 	} else {
 		return TC_ACT_OK;
